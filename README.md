@@ -1,8 +1,7 @@
 # MouseOverSounds
 A Vanilla Warcraft (1.12.1) addon that plays a warning sound when you mouseover a rare, elite or dangerous mob. 
 
-**This addon was not created by me. It was created by a member of \<Still Alive\> who contacted me privatly, asking if I could share it. While requesting that they remain anonymous.**  
-I will be maintaining it and most likely continuing development of it.
+**This addon was not created by me. It was created by "Klas" a member of \<Still Alive\>.**  
 
 ![MouseOverSounds](https://github.com/Lexiebean/MouseOverSounds/blob/main/Preview.png)
 
