@@ -9,6 +9,7 @@ smallWarningMouseOver = -1
 playMouseOverXPSound = true
 playMouseOverQuestSound = true
 MouseOverAddLevelsForNonWarriors = true
+MouseOverInGroup = true
 
 local oldLarge = largeWarningMouseOver
 local oldMedium = mediumWarningMouseOver
@@ -16,6 +17,7 @@ local oldSmall = smallWarningMouseOver
 local oldXP = playMouseOverXPSound
 local oldQuest = playMouseOverQuestSound
 local oldWarrior = MouseOverAddLevelsForNonWarriors
+local oldGroup = MouseOverInGroup
 
 local largeWarningSound = "PVPENTERQUEUE" -- "RaidWarning"
 local mediumWarningSound = "TalentScreenOpen"  --"MINIMAPCLOSE"
@@ -160,7 +162,7 @@ mouseOverSounds:SetScript("OnEvent", function(self,event, ...)
 		  return
 		end
 
-		if GetPartyMember(1) then -- Don't use the warnings if in a group.
+		if (GetPartyMember(1) and MouseOverInGroup) then -- Don't use the warnings if in a group.
 		  return
 		end
 
@@ -210,13 +212,36 @@ end)
 
 mouseOverSettings:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 mouseOverSettings:SetWidth(256)
-mouseOverSettings:SetHeight(216+36+36+36)
+mouseOverSettings:SetHeight(216+36+36+36+36)
 mouseOverSettings:SetBackdrop({
   bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
   edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
   tile = true, tileSize = 32, edgeSize = 32,
   insets = { left = 11, right = 12, top = 12, bottom = 11 }
 })
+
+mouseOverSettings:SetMovable(true)
+mouseOverSettings:EnableMouse(true)
+mouseOverSettings:SetClampedToScreen(true)
+mouseOverSettings:RegisterForDrag("LeftButton")
+	mouseOverSettings:SetScript("OnMouseDown", function()
+		if arg1 == "LeftButton" and not this.isMoving then
+			this:StartMoving();
+			this.isMoving = true;
+		end
+	end)
+	mouseOverSettings:SetScript("OnMouseUp", function()
+		if arg1 == "LeftButton" and this.isMoving then
+			this:StopMovingOrSizing();
+			this.isMoving = false;
+		end
+	end)
+	mouseOverSettings:SetScript("OnHide", function()
+		if this.isMoving then
+			this:StopMovingOrSizing();
+			this.isMoving = false;
+		end
+	end)
 
 mouseOverSettings.title = CreateFrame("Frame", "MouseOverSettingsGUITtitle", mouseOverSettings)
 mouseOverSettings.title:SetPoint("TOP", mouseOverSettings, "TOP", 0, 12)
@@ -243,6 +268,7 @@ mouseOverSettings.cancel:SetScript("OnClick", function()
   playMouseOverQuestSound = oldQuest
   playMouseOverXPSound = oldXP
   MouseOverAddLevelsForNonWarriors = oldWarrior
+  MouseOverInGroup = oldGroup
  
   mouseOverSettings.bigWarningLevels:SetValue(largeWarningMouseOver)
   mouseOverSettings.mediumWarningLevels:SetValue(mediumWarningMouseOver)
@@ -403,6 +429,19 @@ mouseOverSettings.warriorButton:SetScript("OnClick",
   end
 );
 
+yoff = yoff + 36
+
+mouseOverSettings.groupButton = CreateFrame("CheckButton", "mouseoverGroupCheckbox", mouseOverSettings, "OptionsCheckButtonTemplate");
+mouseOverSettings.groupButton:SetPoint("TOPLEFT", mouseOverSettings, "TOPLEFT", spacing-4, -yoff)
+mouseoverGroupCheckboxText:SetText("Disable while in a group")
+mouseOverSettings.groupButton.tooltipText = "Disable while in a group."
+mouseOverSettings.groupButton:SetChecked(MouseOverInGroup)
+mouseOverSettings.groupButton:SetScript("OnClick", 
+  function()
+    MouseOverInGroup = mouseOverSettings.groupButton:GetChecked()
+  end
+);
+
 GameMenuFrame:SetHeight(GameMenuFrame:GetHeight() + 22)
 
 
@@ -419,6 +458,7 @@ MouseoverSounds:SetScript("OnClick", function()
   oldQuest = playMouseOverQuestSound 
   oldXP = playMouseOverXPSound 
   oldWarrior = MouseOverAddLevelsForNonWarriors
+  oldGroup = MouseOverInGroup
 
   mouseOverSettings.bigWarningLevels:SetValue(largeWarningMouseOver)
   mouseOverSettings.mediumWarningLevels:SetValue(mediumWarningMouseOver)
@@ -427,6 +467,7 @@ MouseoverSounds:SetScript("OnClick", function()
   mouseOverSettings.xpButton:SetChecked(playMouseOverXPSound)
   mouseOverSettings.questButton:SetChecked(playMouseOverQuestSound)
   mouseOverSettings.warriorButton:SetChecked(MouseOverAddLevelsForNonWarriors)
+  mouseOverSettings.groupButton:SetChecked(MouseOverInGroup)
   
   
   mouseOverSettings:Show()

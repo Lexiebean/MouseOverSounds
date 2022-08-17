@@ -1,7 +1,7 @@
 ## Title: MouseOverSounds
 ## Notes: Plays different sounds when mouseover
-## Version: 1.0
+## Version: 1.1
 ## LoadOnDemand: 0
-## SavedVariablesPerCharacter: largeWarningMouseOver, mediumWarningMouseOver, smallWarningMouseOver, playMouseOverXPSound, playMouseOverQuestSound, MouseOverAddLevelsForNonWarriors
+## SavedVariablesPerCharacter: largeWarningMouseOver, mediumWarningMouseOver, smallWarningMouseOver, playMouseOverXPSound, playMouseOverQuestSound, MouseOverAddLevelsForNonWarriors, MouseOverInGroup
 
 MouseOverSounds.lua
