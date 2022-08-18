@@ -6,6 +6,8 @@ largeWarningMouseOver = 4
 mediumWarningMouseOver = 1
 smallWarningMouseOver = -1
 
+largeWarningMouseOverHP = 2.0
+mediumWarningMouseOverHP = 1.0							 
 playMouseOverXPSound = true
 playMouseOverQuestSound = true
 MouseOverAddLevelsForNonWarriors = true
@@ -14,6 +16,8 @@ MouseOverInGroup = true
 local oldLarge = largeWarningMouseOver
 local oldMedium = mediumWarningMouseOver
 local oldSmall = smallWarningMouseOver
+local oldLargeHP = largeWarningMouseOverHP
+local oldMediumHP = mediumWarningMouseOverHP
 local oldXP = playMouseOverXPSound
 local oldQuest = playMouseOverQuestSound
 local oldWarrior = MouseOverAddLevelsForNonWarriors
@@ -90,7 +94,7 @@ mouseOverSounds:SetScript('OnUpdate', function(self, elapsed)
 						lastmouseoversoundPlayed = GetTime()
 						return
 					end
-					if string.find(tt,"Chest") or (string.find(tt,"Herbalism") and hasHerbalism) or (string.find(tt,"Mining") and hasMining) then
+					if string.find(tt,"Tattered Chest") or string.find(tt,"Battered Chest") or string.find(tt,"Solid Chest") or (string.find(tt," Herbalism") and hasHerbalism) or (string.find(tt," Mining") and hasMining) then
 						PlaySound(chestSound, "SFX")
 						lastmouseoversoundPlayed = GetTime()
 						return
@@ -109,7 +113,7 @@ mouseOverSounds:SetScript('OnUpdate', function(self, elapsed)
 						lastmouseoversoundPlayed = GetTime()
 						return
 					end
-					if (string.find(tt,"Herbalism") and hasHerbalism) or (string.find(tt,"Mining") and hasMining) then
+					if (string.find(tt,"Requires Herbalism") and hasHerbalism) or (string.find(tt," Mining") and hasMining) then
 						PlaySound(chestSound, "SFX")
 						lastmouseoversoundPlayed = GetTime()
 						return
@@ -180,13 +184,15 @@ mouseOverSounds:SetScript("OnEvent", function(self,event, ...)
 			end
 		end
 		
-		if largeWarningMouseOver>-10 and uenemy and ((uc == 'worldboss' or uc == 'rareelite' or uc == 'elite' or uc == 'rare') or 
-		   ((playerLvl - 1 + largeWarningMouseOver < unitLvl) or (unitLvl == -1)) or
-		   (UnitHealth("player") * 2 < UnitHealth(unit))) then
+		if (uc == 'worldboss' or uc == 'rareelite' or uc == 'elite' or uc == 'rare') then
+			playerLvl = playerLvl - 10
+		end
+		if largeWarningMouseOver>-10 and uenemy and (((playerLvl - 1 + largeWarningMouseOver < unitLvl) or (unitLvl == -1)) or
+		   (UnitHealth("player") * largeWarningMouseOverHP < UnitHealth(unit))) then
 		  PlaySound(largeWarningSound,"SFX") -- Large warning
 
-		--elseif mediumWarningMouseOver>-10 and uenemy and UnitHealth("player") < UnitHealth(unit) then
-		  --PlaySound(mediumWarningSound,"SFX")  -- Medium warning
+		elseif mediumWarningMouseOver>-10 and uenemy and UnitHealth("player")*mediumWarningMouseOverHP < UnitHealth(unit) then
+		  PlaySound(mediumWarningSound,"SFX")  -- Medium warning
 		
 		elseif mediumWarningMouseOver>-10 and uenemy and (playerLvl - 1 + mediumWarningMouseOver < unitLvl) then
 		  PlaySound(mediumWarningSound,"SFX")  -- Medium warning
@@ -212,7 +218,7 @@ end)
 
 mouseOverSettings:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 mouseOverSettings:SetWidth(256)
-mouseOverSettings:SetHeight(216+36+36+36+36)
+mouseOverSettings:SetHeight(216+36+36+36+36+30+30+20)
 mouseOverSettings:SetBackdrop({
   bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
   edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
@@ -258,13 +264,15 @@ mouseOverSettings.title.text:SetPoint("TOP", 0, -14)
 
 mouseOverSettings.cancel = CreateFrame("Button", "MouseOverSettingsGUICancel", mouseOverSettings, "GameMenuButtonTemplate")
 mouseOverSettings.cancel:SetWidth(90)
-mouseOverSettings.cancel:SetPoint("BOTTOMRIGHT", mouseOverSettings, "BOTTOMRIGHT", -17, 17)
+mouseOverSettings.cancel:SetPoint("BOTTOMRIGHT", mouseOverSettings, "BOTTOMRIGHT", -38, 17)
 mouseOverSettings.cancel:SetText(CANCEL)
 mouseOverSettings.cancel:SetScript("OnClick", function()
   largeWarningMouseOver = oldLarge
   mediumWarningMouseOver = oldMedium
   smallWarningMouseOver = oldSmall
 
+  largeWarningMouseOverHP = oldLargeHP
+  mediumWarningMouseOverHP = oldMediumHP							  
   playMouseOverQuestSound = oldQuest
   playMouseOverXPSound = oldXP
   MouseOverAddLevelsForNonWarriors = oldWarrior
@@ -274,6 +282,8 @@ mouseOverSettings.cancel:SetScript("OnClick", function()
   mouseOverSettings.mediumWarningLevels:SetValue(mediumWarningMouseOver)
   mouseOverSettings.smallWarningLevels:SetValue(smallWarningMouseOver)
 
+  mouseOverSettings.bigWarningLevelsHP:SetValue(largeWarningMouseOverHP)
+  mouseOverSettings.mediumWarningLevelsHP:SetValue(mediumWarningMouseOverHP)																		
   mouseOverSettings.xpButton:SetChecked(playMouseOverXPSound)
   mouseOverSettings.questButton:SetChecked(playMouseOverQuestSound)
   mouseOverSettings.warriorButton:SetChecked(MouseOverAddLevelsForNonWarriors)
@@ -302,10 +312,10 @@ mouseOverSettings.bigWarningLevels:SetHeight(16)
 mouseOverSettings.bigWarningLevels:SetOrientation('HORIZONTAL')
 mouseOverSettings.bigWarningLevels:Show()
 
-mouseOverSettings.bigWarningLevels.tooltipText = 'Mob levels over the player for large warning sound. This sound also plays for rares/elites or mobs with health 2X the players health.'   -- Creates a tooltip on mouseover.
+mouseOverSettings.bigWarningLevels.tooltipText = 'Mob levels over the player for large warning sound. Rares/elites counts as -10 lvs.'   
 getglobal(mouseOverSettings.bigWarningLevels:GetName() .. 'Low'):SetText('-10')    
 getglobal(mouseOverSettings.bigWarningLevels:GetName() .. 'High'):SetText('10')   
-getglobal(mouseOverSettings.bigWarningLevels:GetName() .. 'Text'):SetText('Large warning: ' ..  largeWarningMouseOver .. ", lvl " ..(UnitLevel("player") + largeWarningMouseOver))
+getglobal(mouseOverSettings.bigWarningLevels:GetName() .. 'Text'):SetText('Large warning: ' ..  largeWarningMouseOver .. ", lvl " ..(UnitLevel("player") + largeWarningMouseOver).." ("..(UnitLevel("player") + largeWarningMouseOver-10).." rares)")
 
 mouseOverSettings.bigWarningLevels:SetMinMaxValues(-10, 10)
 mouseOverSettings.bigWarningLevels:SetValue(largeWarningMouseOver)
@@ -313,7 +323,7 @@ mouseOverSettings.bigWarningLevels:SetValueStep(1)
 mouseOverSettings.bigWarningLevels:SetThumbTexture("Interface\\Buttons\\UI-SliderBar-Button-Horizontal")
 
 mouseOverSettings.bigWarningLevels:SetScript("OnValueChanged",function()
-  getglobal(mouseOverSettings.bigWarningLevels:GetName() .. 'Text'):SetText('Large warning: ' .. mouseOverSettings.bigWarningLevels:GetValue() .. ", lvl " ..(UnitLevel("player") + mouseOverSettings.bigWarningLevels:GetValue())) 
+  getglobal(mouseOverSettings.bigWarningLevels:GetName() .. 'Text'):SetText('Large warning: ' ..  largeWarningMouseOver .. ", lvl " ..(UnitLevel("player") + largeWarningMouseOver).." ("..(UnitLevel("player") + largeWarningMouseOver-10).." rares)")
   largeWarningMouseOver = mouseOverSettings.bigWarningLevels:GetValue()
   if largeWarningMouseOver == -10 then
     getglobal(mouseOverSettings.bigWarningLevels:GetName() .. 'Text'):SetText('Large warning: Off') 
@@ -325,6 +335,33 @@ mouseOverSettings.bigWarningLevels:SetScript("OnValueChanged",function()
 end)
 
 yoff = yoff + 40
+mouseOverSettings.bigWarningLevelsHP = CreateFrame("Slider", "SliderBigWarningLevelsHP", mouseOverSettings, "OptionsSliderTemplate")
+mouseOverSettings.bigWarningLevelsHP:SetPoint("TOPLEFT", mouseOverSettings, "TOPLEFT", spacing, -yoff)
+mouseOverSettings.bigWarningLevelsHP:SetWidth(200)
+mouseOverSettings.bigWarningLevelsHP:SetHeight(16)
+mouseOverSettings.bigWarningLevelsHP:SetOrientation('HORIZONTAL')
+mouseOverSettings.bigWarningLevelsHP:Show()
+
+mouseOverSettings.bigWarningLevelsHP.tooltipText = 'Mob HP > The players HP for large warning sound.'   
+getglobal(mouseOverSettings.bigWarningLevelsHP:GetName() .. 'Low'):SetText('0.5')    
+getglobal(mouseOverSettings.bigWarningLevelsHP:GetName() .. 'High'):SetText('4.0')   
+getglobal(mouseOverSettings.bigWarningLevelsHP:GetName() .. 'Text'):SetText('Or mob HP > ' .. string.format("%.1f",largeWarningMouseOverHP) .. '  (' ..string.format("%d",UnitHealth("player") * largeWarningMouseOverHP)..')') 
+
+mouseOverSettings.bigWarningLevelsHP:SetMinMaxValues(0.5, 4.0)
+mouseOverSettings.bigWarningLevelsHP:SetValue(largeWarningMouseOverHP)
+mouseOverSettings.bigWarningLevelsHP:SetValueStep(0.1)
+mouseOverSettings.bigWarningLevelsHP:SetThumbTexture("Interface\\Buttons\\UI-SliderBar-Button-Horizontal")
+
+mouseOverSettings.bigWarningLevelsHP:SetScript("OnValueChanged",function()
+  largeWarningMouseOverHP = mouseOverSettings.bigWarningLevelsHP:GetValue()
+  getglobal(mouseOverSettings.bigWarningLevelsHP:GetName() .. 'Text'):SetText('Or mob HP > ' .. string.format("%.1f",largeWarningMouseOverHP) .. '  (' ..string.format("%d",UnitHealth("player") * largeWarningMouseOverHP)..')') 
+  if GetTime() > lastmouseoversoundPlayed + 2 then
+	PlaySound(largeWarningSound,"SFX") -- Large warning
+	lastmouseoversoundPlayed = GetTime()
+  end
+end)
+
+yoff = yoff + 50																																	
 
 mouseOverSettings.mediumWarningLevels = CreateFrame("Slider", "SliderMediumWarningLevels", mouseOverSettings, "OptionsSliderTemplate")
 mouseOverSettings.mediumWarningLevels:SetPoint("TOPLEFT", mouseOverSettings, "TOPLEFT", spacing, -yoff)
@@ -333,7 +370,7 @@ mouseOverSettings.mediumWarningLevels:SetHeight(16)
 mouseOverSettings.mediumWarningLevels:SetOrientation('HORIZONTAL')
 mouseOverSettings.mediumWarningLevels:Show()
 
-mouseOverSettings.mediumWarningLevels.tooltipText = 'Mob levels over the player for medium warning sound.'   -- Creates a tooltip on mouseover.
+mouseOverSettings.mediumWarningLevels.tooltipText = 'Mob levels over the player for medium warning sound.'  
 getglobal(mouseOverSettings.mediumWarningLevels:GetName() .. 'Low'):SetText('-10')      
 getglobal(mouseOverSettings.mediumWarningLevels:GetName() .. 'High'):SetText('10')     
 getglobal(mouseOverSettings.mediumWarningLevels:GetName() .. 'Text'):SetText('Medium warning: ' .. mediumWarningMouseOver .. ", lvl " ..(UnitLevel("player") + mediumWarningMouseOver)) 
@@ -355,7 +392,34 @@ mouseOverSettings.mediumWarningLevels:SetScript("OnValueChanged",function()
   end
 end)
 
-yoff = yoff + 40
+yoff = yoff + 36
+
+mouseOverSettings.mediumWarningLevelsHP = CreateFrame("Slider", "SliderMediumWarningLevelsHP", mouseOverSettings, "OptionsSliderTemplate")
+mouseOverSettings.mediumWarningLevelsHP:SetPoint("TOPLEFT", mouseOverSettings, "TOPLEFT", spacing, -yoff)
+mouseOverSettings.mediumWarningLevelsHP:SetWidth(200)
+mouseOverSettings.mediumWarningLevelsHP:SetHeight(16)
+mouseOverSettings.mediumWarningLevelsHP:SetOrientation('HORIZONTAL')
+mouseOverSettings.mediumWarningLevelsHP:Show()
+
+mouseOverSettings.mediumWarningLevelsHP.tooltipText = 'Mob HP > The players HP for medium warning sound.'   
+getglobal(mouseOverSettings.mediumWarningLevelsHP:GetName() .. 'Low'):SetText('0.1')    
+getglobal(mouseOverSettings.mediumWarningLevelsHP:GetName() .. 'High'):SetText('4.0')   
+getglobal(mouseOverSettings.mediumWarningLevelsHP:GetName() .. 'Text'):SetText('Or mob HP > ' .. string.format("%.1f",mediumWarningMouseOverHP) .. '  (' ..string.format("%d",UnitHealth("player") * mediumWarningMouseOverHP)..')') 
+
+mouseOverSettings.mediumWarningLevelsHP:SetMinMaxValues(0.1, 4.0)
+mouseOverSettings.mediumWarningLevelsHP:SetValue(mediumWarningMouseOverHP)
+mouseOverSettings.mediumWarningLevelsHP:SetValueStep(0.1)
+mouseOverSettings.mediumWarningLevelsHP:SetThumbTexture("Interface\\Buttons\\UI-SliderBar-Button-Horizontal")
+
+mouseOverSettings.mediumWarningLevelsHP:SetScript("OnValueChanged",function()
+  mediumWarningMouseOverHP = mouseOverSettings.mediumWarningLevelsHP:GetValue()
+  getglobal(mouseOverSettings.mediumWarningLevelsHP:GetName() .. 'Text'):SetText('Or mob HP > ' .. string.format("%.1f",mediumWarningMouseOverHP) .. '  (' ..string.format("%d",UnitHealth("player") * mediumWarningMouseOverHP)..')') 
+  if GetTime() > lastmouseoversoundPlayed + 2 then
+	PlaySound(mediumWarningSound,"SFX") 
+	lastmouseoversoundPlayed = GetTime()
+  end
+end)
+yoff = yoff + 50
 
 mouseOverSettings.smallWarningLevels = CreateFrame("Slider", "SliderSmallWarningLevels", mouseOverSettings, "OptionsSliderTemplate")
 mouseOverSettings.smallWarningLevels:SetPoint("TOPLEFT", mouseOverSettings, "TOPLEFT", spacing, -yoff)
@@ -454,7 +518,9 @@ MouseoverSounds:SetScript("OnClick", function()
   oldLarge = largeWarningMouseOver
   oldMedium = mediumWarningMouseOver
   oldSmall = smallWarningMouseOver
-
+  oldLargeHP = largeWarningMouseOverHP
+  oldMediumHP = mediumWarningMouseOverHP
+ 
   oldQuest = playMouseOverQuestSound 
   oldXP = playMouseOverXPSound 
   oldWarrior = MouseOverAddLevelsForNonWarriors
